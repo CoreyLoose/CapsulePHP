@@ -16,7 +16,7 @@ Optional:
 
 What's the point?
 
-Frequently I'd find myself arguing that the best framework would be one that did nothing -Ñ although this is a bit of an exaggeration I decided to see how close I could get to this ideal. Less of a framework and more of a skeleton. Provide the bones and make it easy to strap in the muscles and nerves.
+Frequently I'd find myself arguing that the best framework would be one that did nothing - although this is a bit of an exaggeration I decided to see how close I could get to this ideal. Less of a framework and more of a skeleton. Provide the bones and make it easy to strap in the muscles and nerves.
 
 What do I need?
 
