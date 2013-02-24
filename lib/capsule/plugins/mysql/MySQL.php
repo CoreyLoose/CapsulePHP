@@ -24,7 +24,11 @@ class MySQL
 			$sql = str_replace(':'.$key, $this->quote($val), $sql);
 		}
 
+		capsule()->logger->log('info', $sql);
 		$this->_lastResult = $this->_connection->get()->query($sql);
+		if ($error = $this->_connection->get()->error) {
+			capsule()->logger->log('error', $error);
+		}
 		if( $this->_lastResult instanceof MySQLi_Result ) {
 			return $this->_fetchAll($this->_lastResult);
 		}
@@ -38,6 +42,23 @@ class MySQL
 			return FALSE;
 		}
 		return $result[0];
+	}
+
+	public function fetchRow( $table, $where )
+	{
+		return $this->queryRow(implode(' ', array(
+			'SELECT * FROM `'.$table.'`',
+			$this->_createWhereClause($where),
+			$this->_createLimitClause(1)
+		)));
+	}
+
+    public function fetchMany( $table, $where )
+	{
+		return $this->query(implode(' ', array(
+			'SELECT * FROM `'.$table.'`',
+			$this->_createWhereClause($where)
+		)));
 	}
 	
 	public function getAffectedRows()
@@ -58,7 +79,7 @@ class MySQL
 		}
 		
 		$insertSql = $insertString . ' INTO `' . $table . '` (';
-		$insertCols = array();		
+		$insertCols = array();
 
 		foreach( $rows[0] as $key => $value ) {
 			$insertCols[] = $key;
@@ -69,7 +90,7 @@ class MySQL
 		$rowsToInsert = array();
 		foreach( $rows as $row ) {
 			$rowToInsert = '';
-			foreach( $insertCols as $col ) {			
+			foreach( $insertCols as $col ) {
 				$rowToInsert[]  = $this->quote($row[$col]);
 			}
 			$rowsToInsert[] = implode(', ',$rowToInsert);
@@ -83,28 +104,35 @@ class MySQL
 	public function update( $table, $values, $params = array() )
 	{
 		$this->_multiArg->req( $params, array(
-			'whereCol' => FALSE,
-			'whereVal' => FALSE,
-			'limit' => FALSE
+			'where' => MultiArg::REQUIRED,
+			'limit' => 1
 		));
-		
-		$updateQuery = 'UPDATE `'.$table.'` SET ';
+
 		$updateValues = array();
 		foreach( $values as $col => $val ) {
 			$updateValues[] = '`'.$col.'`='.$this->quote($val);
 		}
-		$updateQuery .= implode(', ',$updateValues);
-		
-		if( $params['whereCol'] && $params['whereVal'] ) {
-			$updateQuery .= ' WHERE `'.$params['whereCol'].'`='
-			              . $this->quote($params['whereVal']);
-		}
-		
-		if( $params['limit'] ) {
-			$updateQuery .= ' LIMIT '.$params['limit'];
-		}
-		
-		return $this->query($updateQuery);
+
+		return $this->query(implode(' ', array(
+			'UPDATE `'.$table.'` SET',
+		   implode(', ',$updateValues),
+			$this->_createWhereClause($params['where']),
+			$this->_createLimitClause($params['limit'])
+		)));
+	}
+
+	public function delete( $table, $params = array() )
+	{
+		$this->_multiArg->req( $params, array(
+			'where' => MultiArg::REQUIRED,
+			'limit' => 1
+		));
+
+		return $this->query(implode(' ', array(
+			'DELETE FROM `'.$table.'`',
+			$this->_createWhereClause($params['where']),
+			$this->_createLimitClause($params['limit'])
+		)));
 	}
 	
 	public function quote( $val )
@@ -133,5 +161,24 @@ class MySQL
 		}
 		$result->free();
 		return $resultArray;
+	}
+
+	protected function _createWhereClause( $where_key_values )
+	{
+		if (count($where_key_values) < 1) {
+			return '';
+		}
+		$where_clauses = array();
+		foreach ($where_key_values as $key => $value) {
+			$where_clauses[] = '`'. $key . '`=' . $this->quote($value);
+		}
+		return 'WHERE ' . implode(' AND ', $where_clauses);
+	}
+
+	protected function _createLimitClause( $limit ) {
+		if (!$limit) {
+			return '';
+		}
+		return 'LIMIT '.$limit;
 	}
 }

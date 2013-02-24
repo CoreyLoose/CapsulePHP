@@ -79,7 +79,15 @@ class OutputFormatter
 		$this->_currentTitle = $title;
 		return TRUE;
 	}
-	
+
+	/**
+	 * @param $title
+	 * @return string
+	 */
+	public function getTitle( $title ) {
+		return $this->_currentTitle;
+	}
+
 	/**
 	 * Short-circuts any content output and instead shows a 404 page
 	 *

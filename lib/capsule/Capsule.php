@@ -19,7 +19,8 @@ class Capsule
 	public $modelDir;
 	public $viewDir;
 	public $controlDir;
-	
+	public $patternDir;
+
 	public $resource;
 	public $library;
 	
@@ -27,7 +28,7 @@ class Capsule
 	{
 		$this->library = new Library($this);
 		$this->library->load('multiArg', 'capsule/util/args/');
-		
+
 		$this->multiArg->req($params, array(
 			'charset' => 'utf-8',
 			'debug' => FALSE,
@@ -35,11 +36,15 @@ class Capsule
 			'webDir' => __DIR__.'/../../htdocs/',
 			'modelDir' => __DIR__.'/../../app/model/',
 			'viewDir' => __DIR__.'/../../app/view/',
-			'controlDir' => __DIR__.'/../../app/controller/'
+			'controlDir' => __DIR__.'/../../app/controller/',
+			'patternDir' => __DIR__.'/../../app/pattern/'
 		));
 		
 		$this->multiArg->apply($params, $this);
-		
+
+		$this->library->load('input', 'capsule/util/input/');
+		$this->input->cleanRequest();
+
 		$this->resource = new Resource($this->webDir);
 		$this->model = new Model($this, $this->modelDir);
 		$this->library->load('event', 'capsule/event/');
@@ -112,5 +117,11 @@ class Capsule
 		);
 		
 		return $output;
+	}
+
+	public function usePattern( $patternName ) {
+		$fileToLoad = $this->patternDir.$patternName.'.php';
+		require_once $fileToLoad;
+		return new $patternName();
 	}
 }

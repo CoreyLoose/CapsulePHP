@@ -1,7 +1,6 @@
 Capsule is an open source PHP 5.3 framework built in the hierarchical MVC style that does a few things very well and lets you plug in the rest.
 
 Documentation and News @ http://capsulephp.org
-Community @ http://groups.google.com/group/capsulephp
 Code @ https://github.com/CoreyLoose/CapsulePHP
 
 Released under the Clear BSD License

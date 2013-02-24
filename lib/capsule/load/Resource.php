@@ -1,6 +1,7 @@
 <?php
 namespace org\capsule\load;
 use Exception as Exception;
+use UserConfig as UserConfig;
 
 class Resource
 {
@@ -26,6 +27,15 @@ class Resource
 	
 	public function load( $webPathToResource )
 	{
+		$current_version = UserConfig::$assets_version;
+		foreach (UserConfig::$assets_url_patterns as $version_pattern) {
+			$webPathToResource = str_replace(
+				$version_pattern,
+				$version_pattern.$current_version.'/',
+				$webPathToResource
+			);
+		}
+
 		$lastDot = strrpos($webPathToResource, '.');
 		if( $lastDot === FALSE ) {
 			throw new Exception(
@@ -33,9 +43,8 @@ class Resource
 				'must have a file extension'
 			);
 		}
-		
 		$fileExt = strtoupper(substr($webPathToResource,$lastDot+1));
-		
+
 		switch( $fileExt )
 		{
 			case 'JS':

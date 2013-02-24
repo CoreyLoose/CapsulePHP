@@ -27,7 +27,7 @@ class Template
 			}
 			require $pathToView;
 		};
-		
+
 		$viewFunc($fileName, $vars);
 	}
 	

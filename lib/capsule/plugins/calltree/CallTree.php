@@ -9,13 +9,15 @@ class CallTree
 	protected $_callTree;
 	protected $_currentNode;
 	protected $_prevNode;
-	
+	protected $_currentDepth;
+
 	protected $_capsule;
 	
 	public function __construct( Capsule &$capsule )
 	{
 		$this->_capsule =& $capsule;
 		$this->_callTree = array();
+		$this->_currentDepth = 0;
 		
 		$this->_capsule->event->addListener(
 			CapsuleEvents::NewCall,
@@ -33,6 +35,14 @@ class CallTree
 	{
 		echo '<pre>'; print_r($this->getTree()); echo '</pre>';
 	}
+
+	public function currentDepth() {
+		return $this->_currentDepth;
+	}
+
+	public function currentUrl() {
+		return $this->_currentNode[0];
+	}
 	
 	public function getTree()
 	{
@@ -42,6 +52,7 @@ class CallTree
 	public function newCall( $evt )
 	{
 		$url = $evt->info['url'];
+		$this->_currentDepth++;
 		
 		if( $this->_currentNode === null ) {
 			$this->_prevNode = null;
@@ -59,5 +70,6 @@ class CallTree
 	public function finishedCall( $evt )
 	{
 		$this->_currentNode =& $this->_prevNode;
+		$this->_currentDepth--;
 	}
 }

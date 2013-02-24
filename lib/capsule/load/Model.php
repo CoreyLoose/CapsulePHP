@@ -18,6 +18,9 @@ class Model
 	
 	public function load( $modelName )
 	{
+		$origModelName = $modelName;
+		$modelName = $modelName[0] . str_replace('_', '/', substr($modelName, 1));
+
 		$slashPos = strrpos($modelName, '/');
 		$dirName = '';
 		if( $slashPos !== FALSE ) {
@@ -30,20 +33,26 @@ class Model
 		}
 		
 		$modelClassName = $modelName.'Model';
-		$propName = strtolower($modelName);
 		$fileName = $this->_modelRoot.$dirName.$modelClassName.'.php';
-		
 		if( isset($this->_loaded[$fileName]) ) {
 			return FALSE;
 		}
-		
+
 		if( !$this->_capsule->library->isFileLoadable($fileName) ) {
 			throw new Exception(
 				'Unable to load "'.$fileName.'" using current include path'
 			);	
 		}
-		
+
+		$this->_loaded[$fileName] = true;
 		require $fileName;
-		$this->$propName = new $modelClassName();
+		$this->$origModelName = new $modelClassName();
+	}
+
+	public function __get($name) {
+		if (!isset($this->$name)) {
+			$this->load($name);
+		}
+		return $this->$name;
 	}
 }
